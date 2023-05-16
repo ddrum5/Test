@@ -4,5 +4,5 @@ data class StoryModel(
     val name: String,
     val images: List<Int>,
 ) {
-    var currentPosition: Int = 0
+    var currentImagePosition: Int = 0
 }

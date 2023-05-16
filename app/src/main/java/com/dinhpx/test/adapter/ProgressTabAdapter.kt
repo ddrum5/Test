@@ -48,19 +48,28 @@ class ProgressTabAdapter(private val tabSize: Int) :
         return mTabList.size
     }
 
-    fun progressTab(position: Int, process: Int, isSmooth: Boolean = true) {
-        mTabList[position].progress = process
-        notifyItemChanged(position, if (isSmooth) SMOOTH_PROGRESS_PAYLOAD else PROGRESS_PAYLOAD)
+    fun setTabProgress(position: Int, process: Int, isSmooth: Boolean = true) {
+        if (position in mTabList.indices) {
+            mTabList[position].progress = process
+            notifyItemChanged(position, if (isSmooth) SMOOTH_PROGRESS_PAYLOAD else PROGRESS_PAYLOAD)
+            mTabList.forEachIndexed { index, _ ->
+                if (index < position) {
+                    selectTab(index)
+                }
+                if (index > position) {
+                    unselectTab(index)
+                }
+            }
+        }
     }
 
     fun unselectTab(position: Int) {
         notifyItemChanged(position, HIDE_PAYLOAD)
     }
 
-    fun unSelectAllTab() {
-        mTabList.forEachIndexed { index, _ ->
-            unselectTab(index)
-        }
+    fun selectTab(position: Int) {
+        mTabList[position].progress = 100
+        notifyItemChanged(position, PROGRESS_PAYLOAD)
     }
 
 

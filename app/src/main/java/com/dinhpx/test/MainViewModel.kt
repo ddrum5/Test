@@ -1,15 +1,14 @@
 package com.dinhpx.test
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.dinhpx.test.data.StoryModel
 
 class MainViewModel : ViewModel() {
 
 
-    var isRestartStory: Boolean = false
+    var isStopFragment: Boolean = false
 
-    var previousImagePosition = 0
-    var currentImagePosition = 0
 
     var currentStoryPosition = 0
 
@@ -26,25 +25,31 @@ class MainViewModel : ViewModel() {
         )
         stories.add(StoryModel("1", colors.shuffled()))
         stories.add(StoryModel("2", colors.shuffled().takeLast(2)))
-        stories.add(StoryModel("3", colors.shuffled().takeLast(1)))
-
-        val a = 0
 
     }
 
     fun canBackPrevStory(): Boolean {
-        return currentImagePosition < 0 && currentStoryPosition > 0
+        return currentStory.currentImagePosition == 0 && currentStoryPosition > 0
     }
 
     fun canGoToNextStory(): Boolean {
-        return currentImagePosition > currentStory.images.lastIndex && currentStoryPosition < stories.lastIndex
+        return currentStory.currentImagePosition == currentStory.images.lastIndex && currentStoryPosition < stories.lastIndex
     }
 
-    fun isOutLastImageOfLastStory(): Boolean {
-        return currentStoryPosition == stories.lastIndex && currentImagePosition > currentStory.images.lastIndex
+    fun positionInRangeImages(position: Int): Boolean {
+        return position in currentStory.images.indices
     }
 
-    fun isOutFirstImageOfFirstStory(): Boolean {
-        return currentStoryPosition == 0 && currentImagePosition < 0
+    var currentStoryPositionLiveData = MutableLiveData<Int>()
+    fun nextStory() {
+        currentStoryPositionLiveData.postValue(currentStoryPosition + 1)
     }
+
+    fun backStory() {
+        currentStoryPositionLiveData.postValue(currentStoryPosition - 1)
+    }
+
+
+
+
 }

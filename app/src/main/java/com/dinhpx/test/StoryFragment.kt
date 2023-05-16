@@ -1,9 +1,7 @@
 package com.dinhpx.test
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -14,7 +12,6 @@ import androidx.fragment.app.activityViewModels
 import com.dinhpx.test.adapter.ProgressTabAdapter
 import com.dinhpx.test.databinding.FragmentStoryBinding
 import com.dinhpx.test.utils.ResumeTimer
-import com.google.android.material.snackbar.Snackbar
 
 @SuppressLint("ClickableViewAccessibility")
 class StoryFragment : Fragment() {
@@ -31,13 +28,6 @@ class StoryFragment : Fragment() {
 
     private var countDownTimer: ResumeTimer? = null
 
-    private lateinit var storyListener: StoryListener
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        storyListener = requireContext() as StoryListener
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,11 +47,11 @@ class StoryFragment : Fragment() {
 
     private fun initListener() {
         binding.vNext.setOnClickListener {
-            scrollTabAt(viewModel.currentImagePosition + 1)
+            scrollTab(viewModel.currentStory.currentImagePosition + 1)
         }
 
         binding.vPrev.setOnClickListener {
-            scrollTabAt(viewModel.currentImagePosition - 1)
+            scrollTab(viewModel.currentStory.currentImagePosition - 1)
         }
         /*binding.vPrev.setOnTouchListener(onTouchListener)
         binding.vNext.setOnTouchListener(onTouchListener)*/
@@ -85,80 +75,67 @@ class StoryFragment : Fragment() {
     private fun initView() {
         tabAdapter = ProgressTabAdapter(viewModel.currentStory.images.size)
         binding.rvTab.adapter = tabAdapter
-        scrollTabAt(0)
+        scrollTab(0)
+    }
+
+
+
+    private fun scrollTab(position: Int) {
+        countDownTimer?.stop()
+        if (viewModel.positionInRangeImages(position)) {
+            viewModel.currentStory.currentImagePosition = position
+            binding.imageView.setBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    viewModel.currentStory.images[position]
+                )
+            )
+            binding.tvPosition.text = viewModel.currentStory.name
+            countDownTab(position)
+        } else {
+            if (viewModel.canBackPrevStory()) {
+                viewModel.backStory()
+            } else if (!viewModel.canGoToNextStory()) {
+                scrollTab(0)
+            } else if (viewModel.canGoToNextStory()) {
+                viewModel.nextStory()
+            }
+        }
+    }
+
+    private fun countDownTab(position: Int) {
+        tabAdapter?.unselectTab(position)
+        countDownTimer = ResumeTimer(TIME_TAB, 50L, object : ResumeTimer.OnCountDownListener {
+            override fun onTick(elapsed: Long) {
+                tabAdapter?.setTabProgress(position, (elapsed.toFloat() / TIME_TAB * 100).toInt())
+            }
+
+            override fun onFinished() {
+                tabAdapter?.selectTab(position)
+                scrollTab(position + 1)
+            }
+        }).start()
+
     }
 
     override fun onResume() {
         super.onResume()
-        if (viewModel.isRestartStory) {
-            scrollTabAt(0)
-        } else {
+        if (viewModel.isStopFragment) {
             countDownTimer?.start()
+            viewModel.isStopFragment = false
+        } else {
+            scrollTab(viewModel.currentStory.currentImagePosition)
         }
-        viewModel.isRestartStory = false
     }
-
 
     override fun onPause() {
         super.onPause()
         countDownTimer?.stop()
     }
 
-
-    private fun scrollTabAt(position: Int) {
-        try {
-            viewModel.isRestartStory = false
-            viewModel.currentImagePosition = position
-            countDownTimer?.stop()
-            if (viewModel.canBackPrevStory()) {
-                storyListener.onPrevStory()
-            } else if (viewModel.canGoToNextStory()) {
-                storyListener.onNextStory()
-            } else if (viewModel.isOutFirstImageOfFirstStory()) {
-                scrollTabAt(0)
-            } else if (viewModel.isOutLastImageOfLastStory()) {
-                viewModel.currentImagePosition = viewModel.currentStory.images.lastIndex
-                return
-            } else {
-                if (position == 0) {
-                    tabAdapter?.unSelectAllTab()
-                } else if (position < viewModel.previousImagePosition) {
-                    tabAdapter?.unselectTab(viewModel.previousImagePosition)
-                } else if (position != 0) {
-                    tabAdapter?.progressTab(viewModel.previousImagePosition, 100, isSmooth = false)
-                }
-                binding.imageView.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        viewModel.currentStory.images[position]
-                    )
-                )
-                viewModel.previousImagePosition = position
-                countDownTab(position)
-            }
-        } catch (e: Exception) {
-            Snackbar.make(binding.root, "Có lỗi xảy ra", Snackbar.LENGTH_SHORT).show()
-            Log.e("DINHTEST error", e.message.toString())
-        }
-
+    override fun onStop() {
+        super.onStop()
+        viewModel.isStopFragment = true
     }
-
-    private fun countDownTab(position: Int) {
-        tabAdapter?.progressTab(position, 0, isSmooth = false)
-
-        countDownTimer = ResumeTimer(TIME_TAB, 50L, object : ResumeTimer.OnCountDownListener {
-            override fun onTick(elapsed: Long) {
-                val process = (elapsed.toFloat() / TIME_TAB * 100).toInt()
-                tabAdapter?.progressTab(position, process)
-            }
-
-            override fun onFinished() {
-                tabAdapter?.progressTab(position, 100, isSmooth = false)
-                scrollTabAt(position + 1)
-            }
-        }).start()
-
-    }
-
 
 }
