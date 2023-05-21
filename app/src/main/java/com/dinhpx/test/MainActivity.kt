@@ -28,8 +28,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        startActivity(Intent(this, Webview::class.java))
-        finish()
         initView()
         initObserve()
     }
