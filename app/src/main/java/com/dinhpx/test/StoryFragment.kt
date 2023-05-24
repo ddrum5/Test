@@ -2,6 +2,7 @@ package com.dinhpx.test
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -28,6 +29,8 @@ class StoryFragment : Fragment() {
 
     private var countDownTimer: ResumeTimer? = null
 
+    private var timeHoldDown = 0L
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,39 +48,47 @@ class StoryFragment : Fragment() {
     }
 
 
-    private fun initListener() {
-        binding.vNext.setOnClickListener {
-            scrollTab(viewModel.currentStory.currentImagePosition + 1)
-        }
-
-        binding.vPrev.setOnClickListener {
-            scrollTab(viewModel.currentStory.currentImagePosition - 1)
-        }
-        /*binding.vPrev.setOnTouchListener(onTouchListener)
-        binding.vNext.setOnTouchListener(onTouchListener)*/
-
-    }
-
-    private val onTouchListener = View.OnTouchListener { v, event ->
-        when (event?.action) {
-            MotionEvent.ACTION_DOWN -> {
-                countDownTimer?.stop()
-            }
-
-            MotionEvent.ACTION_UP -> {
-                countDownTimer?.start()
-            }
-        }
-        false
-    }
-
-
     private fun initView() {
         tabAdapter = ProgressTabAdapter(viewModel.currentStory.images.size)
         binding.rvTab.adapter = tabAdapter
         scrollTab(0)
     }
 
+
+    private fun initListener() {
+        binding.vPrev.setOnTouchListener(onTouchListenerPrev)
+        binding.vNext.setOnTouchListener(onTouchListenerNext)
+
+    }
+
+    private val onTouchListenerPrev = View.OnTouchListener { v, event ->
+        action(event, isNext = false)
+    }
+
+    private val onTouchListenerNext = View.OnTouchListener { v, event ->
+        action(event, isNext = true)
+    }
+
+    private fun action(event: MotionEvent?, isNext: Boolean): Boolean {
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                countDownTimer?.stop()
+                timeHoldDown = SystemClock.elapsedRealtime()
+            }
+            MotionEvent.ACTION_UP -> {
+                if (SystemClock.elapsedRealtime() - timeHoldDown < 300) {
+                    if (isNext)
+                        scrollTab(viewModel.currentStory.currentImagePosition + 1)
+                    else
+                        scrollTab(viewModel.currentStory.currentImagePosition - 1)
+                } else {
+                    countDownTimer?.start()
+                }
+            }
+        }
+        return true
+
+    }
 
 
     private fun scrollTab(position: Int) {
