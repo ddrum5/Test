@@ -51,7 +51,7 @@ class StoryFragment : Fragment() {
     private fun initView() {
         tabAdapter = ProgressTabAdapter(viewModel.currentStory.images.size)
         binding.rvTab.adapter = tabAdapter
-        scrollTab(0)
+        selectTab(0)
     }
 
 
@@ -78,20 +78,19 @@ class StoryFragment : Fragment() {
             MotionEvent.ACTION_UP -> {
                 if (SystemClock.elapsedRealtime() - timeHoldDown < 300) {
                     if (isNext)
-                        scrollTab(viewModel.currentStory.currentImagePosition + 1)
+                        selectTab(viewModel.currentStory.currentImagePosition + 1)
                     else
-                        scrollTab(viewModel.currentStory.currentImagePosition - 1)
+                        selectTab(viewModel.currentStory.currentImagePosition - 1)
                 } else {
                     countDownTimer?.start()
                 }
             }
         }
         return true
-
     }
 
 
-    private fun scrollTab(position: Int) {
+    private fun selectTab(position: Int) {
         countDownTimer?.stop()
         if (viewModel.positionInRangeImages(position)) {
             viewModel.currentStory.currentImagePosition = position
@@ -107,7 +106,7 @@ class StoryFragment : Fragment() {
             if (viewModel.canBackPrevStory()) {
                 viewModel.backStory()
             } else if (!viewModel.canGoToNextStory()) {
-                scrollTab(0)
+                selectTab(0)
             } else if (viewModel.canGoToNextStory()) {
                 viewModel.nextStory()
             }
@@ -116,6 +115,7 @@ class StoryFragment : Fragment() {
 
     private fun countDownTab(position: Int) {
         tabAdapter?.unselectTab(position)
+        countDownTimer = null
         countDownTimer = ResumeTimer(TIME_TAB, 50L, object : ResumeTimer.OnCountDownListener {
             override fun onTick(elapsed: Long) {
                 tabAdapter?.setTabProgress(position, (elapsed.toFloat() / TIME_TAB * 100).toInt())
@@ -123,7 +123,7 @@ class StoryFragment : Fragment() {
 
             override fun onFinished() {
                 tabAdapter?.selectTab(position)
-                scrollTab(position + 1)
+                selectTab(position + 1)
             }
         }).start()
 
@@ -135,8 +135,9 @@ class StoryFragment : Fragment() {
             countDownTimer?.start()
             viewModel.isStopFragment = false
         } else {
-            scrollTab(viewModel.currentStory.currentImagePosition)
+            selectTab(viewModel.currentStory.currentImagePosition)
         }
+
     }
 
     override fun onPause() {

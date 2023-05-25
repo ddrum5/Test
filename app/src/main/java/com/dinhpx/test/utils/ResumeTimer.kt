@@ -5,30 +5,29 @@ import android.os.Looper
 import java.util.concurrent.TimeUnit
 
 class ResumeTimer(
-    private var duration: Long, // in milliseconds
-    private var tick: Long = TimeUnit.SECONDS.toMillis(1), // in milliseconds
-    private val listener: OnCountDownListener?
+    private val duration: Long, // in milliseconds
+    private val tick: Long = TimeUnit.SECONDS.toMillis(1), // in milliseconds
+    private val onCountDownListener: OnCountDownListener
 ) {
-
     interface OnCountDownListener {
         fun onTick(elapsed: Long) // in milliseconds
         fun onFinished()
     }
 
     private var handler = Handler(Looper.getMainLooper())
-    var elapsed = 0L
+    private var elapsed = 0L
 
     private lateinit var runnable: Runnable
 
     init {
         runnable = Runnable {
             elapsed += tick
-            listener?.onTick(elapsed)
+            onCountDownListener.onTick(elapsed)
             if (elapsed < duration) {
                 handler.postDelayed(runnable, tick)
             } else {
                 stop()
-                listener?.onFinished()
+                onCountDownListener.onFinished()
             }
         }
     }
