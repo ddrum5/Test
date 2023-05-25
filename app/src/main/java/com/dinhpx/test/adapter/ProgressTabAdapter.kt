@@ -6,25 +6,26 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.dinhpx.test.model.TabEntity
 import com.dinhpx.test.databinding.ItemTabBinding
 
-class ProgressTabAdapter(private val tabSize: Int) :
-    RecyclerView.Adapter<ProgressTabAdapter.TabViewHolder>() {
+class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter.TabViewHolder>() {
 
     companion object {
         private const val PROGRESS_PAYLOAD = "PROGRESS_PAYLOAD"
         private const val SMOOTH_PROGRESS_PAYLOAD = "PROGRESS_SMOOTH_PAYLOAD"
         private const val HIDE_PAYLOAD = "HIDE_PAYLOAD"
     }
-
-
     private val mTabList = mutableListOf<TabEntity>()
+
+    init {
+        repeat(tabSize) {
+            mTabList.add(TabEntity())
+        }
+    }
 
     private val screenWidth: Int = Resources.getSystem().displayMetrics.widthPixels
 
-    init {
-        repeat(tabSize) { mTabList.add(TabEntity()) }
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TabViewHolder {
         return TabViewHolder(
@@ -47,6 +48,7 @@ class ProgressTabAdapter(private val tabSize: Int) :
     override fun getItemCount(): Int {
         return mTabList.size
     }
+
 
     fun setTabProgress(position: Int, process: Int, isSmooth: Boolean = true) {
         if (position in mTabList.indices) {
@@ -79,7 +81,7 @@ class ProgressTabAdapter(private val tabSize: Int) :
         init {
             binding.root.layoutParams.apply {
                 val w = screenWidth - getDPtoPX(binding.root.context, 16F) * 2
-                width = w / tabSize - getDPtoPX(binding.root.context, 2F) * 2
+                width = w / mTabList.size - getDPtoPX(binding.root.context, 2F) * 2
             }
         }
 
@@ -112,9 +114,6 @@ class ProgressTabAdapter(private val tabSize: Int) :
         }
     }
 
-    class TabEntity {
-        var progress = 0
-    }
 
 }
 

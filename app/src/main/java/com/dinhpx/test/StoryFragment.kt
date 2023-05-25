@@ -3,11 +3,11 @@ package com.dinhpx.test
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.dinhpx.test.adapter.ProgressTabAdapter
@@ -15,7 +15,7 @@ import com.dinhpx.test.databinding.FragmentStoryBinding
 import com.dinhpx.test.utils.ResumeTimer
 
 @SuppressLint("ClickableViewAccessibility")
-class StoryFragment : Fragment() {
+class StoryFragment(private val position: Int) : Fragment() {
 
     companion object {
         private const val TIME_TAB = 2000L
@@ -29,8 +29,6 @@ class StoryFragment : Fragment() {
 
     private var countDownTimer: ResumeTimer? = null
 
-    private var timeHoldDown = 0L
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +36,7 @@ class StoryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentStoryBinding.inflate(inflater)
+        Log.d("DINHPXTEST", "onCreateView")
         return binding.root
     }
 
@@ -45,30 +44,46 @@ class StoryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initView()
         initListener()
+        initObserve()
+        Log.d("DINHPXTEST", "onViewCreated")
+
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        Log.d("DINHPXTEST", "onViewStateRestored")
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("DINHPXTEST", "onStart")
+
     }
 
 
+
     private fun initView() {
+        viewModel.currentStoryPosition = position
         tabAdapter = ProgressTabAdapter(viewModel.currentStory.images.size)
         binding.rvTab.adapter = tabAdapter
-        selectTab(0)
+        binding.tvPosition.text = viewModel.currentStory.name
+        viewModel.updateImagePosition(0)
     }
 
 
     private fun initListener() {
-        binding.vPrev.setOnTouchListener(onTouchListenerPrev)
-        binding.vNext.setOnTouchListener(onTouchListenerNext)
+        binding.vPrev.setOnTouchListener { v, event ->
+            action(event, isNext = false)
+        }
 
+        binding.vNext.setOnTouchListener { v, event ->
+            action(event, isNext = true)
+        }
     }
 
-    private val onTouchListenerPrev = View.OnTouchListener { v, event ->
-        action(event, isNext = false)
-    }
 
-    private val onTouchListenerNext = View.OnTouchListener { v, event ->
-        action(event, isNext = true)
-    }
-
+    private var timeHoldDown = 0L
     private fun action(event: MotionEvent?, isNext: Boolean): Boolean {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -78,9 +93,9 @@ class StoryFragment : Fragment() {
             MotionEvent.ACTION_UP -> {
                 if (SystemClock.elapsedRealtime() - timeHoldDown < 300) {
                     if (isNext)
-                        selectTab(viewModel.currentStory.currentImagePosition + 1)
+                        viewModel.nextImage()
                     else
-                        selectTab(viewModel.currentStory.currentImagePosition - 1)
+                        viewModel.backImage()
                 } else {
                     countDownTimer?.start()
                 }
@@ -89,33 +104,17 @@ class StoryFragment : Fragment() {
         return true
     }
 
-
-    private fun selectTab(position: Int) {
-        countDownTimer?.stop()
-        if (viewModel.positionInRangeImages(position)) {
-            viewModel.currentStory.currentImagePosition = position
-            binding.imageView.setBackgroundColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    viewModel.currentStory.images[position]
-                )
-            )
-            binding.tvPosition.text = viewModel.currentStory.name
-            countDownTab(position)
-        } else {
-            if (viewModel.canBackPrevStory()) {
-                viewModel.backStory()
-            } else if (!viewModel.canGoToNextStory()) {
-                selectTab(0)
-            } else if (viewModel.canGoToNextStory()) {
-                viewModel.nextStory()
-            }
+    private fun initObserve() {
+        viewModel.imageLiveData.observe(viewLifecycleOwner) { color ->
+            binding.imageView.setImageResource(color)
+            countDownTab(viewModel.currentStory.currentImagePosition)
         }
     }
 
+
     private fun countDownTab(position: Int) {
         tabAdapter?.unselectTab(position)
-        countDownTimer = null
+        countDownTimer?.stop()
         countDownTimer = ResumeTimer(TIME_TAB, 50L, object : ResumeTimer.OnCountDownListener {
             override fun onTick(elapsed: Long) {
                 tabAdapter?.setTabProgress(position, (elapsed.toFloat() / TIME_TAB * 100).toInt())
@@ -123,10 +122,9 @@ class StoryFragment : Fragment() {
 
             override fun onFinished() {
                 tabAdapter?.selectTab(position)
-                selectTab(position + 1)
+                viewModel.nextImage()
             }
         }).start()
-
     }
 
     override fun onResume() {
@@ -135,7 +133,7 @@ class StoryFragment : Fragment() {
             countDownTimer?.start()
             viewModel.isStopFragment = false
         } else {
-            selectTab(viewModel.currentStory.currentImagePosition)
+            countDownTab(viewModel.currentStory.currentImagePosition)
         }
 
     }
