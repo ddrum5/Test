@@ -1,10 +1,8 @@
 package com.dinhpx.test
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.dinhpx.test.model.Story
-import com.dinhpx.test.model.TabEntity
 
 class MainViewModel : ViewModel() {
     var isStopFragment: Boolean = false
@@ -13,11 +11,11 @@ class MainViewModel : ViewModel() {
     var currentStoryPosition = 0
     var currentStoryPositionLiveData = MutableLiveData<Int>()
     val stories = mutableListOf<Story>()
-    val currentStory: Story
+    private val currentStory: Story
         get() = stories[currentStoryPosition]
 
 
-    val imageLiveData = MutableLiveData<Int>()
+    val currentImagePositionLiveData = MutableLiveData<Int>()
 
 
     init {
@@ -32,30 +30,28 @@ class MainViewModel : ViewModel() {
     }
 
 
-
-    fun nextImage() {
-        if (isLastImageOfLastStory()) {
-            updateImagePosition(currentStory.currentImagePosition)
-        } else if (isLastImageOfStory()) {
+    fun nextImage(position: Int) {
+        if (isLastImageOfLastStory(position)) {
+            setImagePosition(position)
+        } else if (isLastImageOfStory(position)) {
             nextStory()
         } else {
-            updateImagePosition(currentStory.currentImagePosition + 1)
+            setImagePosition(position + 1)
         }
     }
 
-    fun backImage() {
-        if (isFirstImageOfFirstStory()) {
-            updateImagePosition(0)
-        } else if (isFirstImageOfStory()) {
+    fun backImage(position: Int) {
+        if (isFirstImageOfFirstStory(position)) {
+            setImagePosition(0)
+        } else if (isFirstImageOfStory(position)) {
             backStory()
         } else {
-            updateImagePosition(currentStory.currentImagePosition - 1)
+            setImagePosition(position - 1)
         }
     }
 
-    fun updateImagePosition(position: Int) {
-        currentStory.currentImagePosition = position
-        imageLiveData.postValue(currentStory.images[currentStory.currentImagePosition])
+    fun setImagePosition(position: Int) {
+        currentImagePositionLiveData.postValue(position)
     }
 
     private fun nextStory() {
@@ -66,20 +62,20 @@ class MainViewModel : ViewModel() {
         currentStoryPositionLiveData.postValue(currentStoryPosition - 1)
     }
 
-    private fun isFirstImageOfStory(): Boolean {
-        return currentStory.currentImagePosition == 0
+    private fun isFirstImageOfStory(position: Int): Boolean {
+        return position == 0
     }
 
-    private fun isFirstImageOfFirstStory(): Boolean {
-        return currentStory.currentImagePosition == 0 && currentStoryPosition == 0
+    private fun isFirstImageOfFirstStory(position: Int): Boolean {
+        return position == 0 && currentStoryPosition == 0
     }
 
-    private fun isLastImageOfStory(): Boolean {
-        return currentStory.currentImagePosition == currentStory.images.lastIndex
+    private fun isLastImageOfStory(position: Int): Boolean {
+        return position == currentStory.images.lastIndex
     }
 
-    private fun isLastImageOfLastStory(): Boolean {
-        return currentStory.currentImagePosition == currentStory.images.lastIndex && currentStoryPosition == stories.lastIndex
+    private fun isLastImageOfLastStory(position: Int): Boolean {
+        return position == currentStory.images.lastIndex && currentStoryPosition == stories.lastIndex
     }
 
 

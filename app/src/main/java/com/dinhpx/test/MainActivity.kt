@@ -1,9 +1,11 @@
 package com.dinhpx.test
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.dinhpx.test.databinding.ActivityMainBinding
 
 
@@ -27,6 +29,11 @@ class MainActivity : AppCompatActivity() {
             override fun createFragment(position: Int) = StoryFragment(position)
         }
         binding.viewPager.adapter = viewPagerAdapter
+        binding.viewPager.registerOnPageChangeCallback(object :OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                viewModel.currentStoryPosition= position
+            }
+        })
     }
 
     private fun initObserve() {
