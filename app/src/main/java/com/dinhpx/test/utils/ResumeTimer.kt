@@ -16,6 +16,7 @@ class ResumeTimer(
 
     private var handler = Handler(Looper.getMainLooper())
     private var elapsed = 0L
+    private var isRunning = false
 
     private lateinit var runnable: Runnable
 
@@ -33,6 +34,7 @@ class ResumeTimer(
     }
 
     fun start(restart: Boolean = false): ResumeTimer {
+        isRunning = true
         if (restart) {
             handler.removeCallbacks(runnable)
             elapsed = 0L
@@ -43,6 +45,11 @@ class ResumeTimer(
     }
 
     fun stop() {
+        isRunning = false
         handler.removeCallbacks(runnable)
+    }
+
+    fun isRunning(): Boolean {
+        return isRunning
     }
 }

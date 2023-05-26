@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:indicatorColor="@color/white"
         android:visibility="visible"
-        app:trackThickness="5dp" />
+        app:trackThickness="3dp" />
 
     <View
         android:id="@+id/viewUnselected"

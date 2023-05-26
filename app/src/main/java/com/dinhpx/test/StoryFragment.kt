@@ -3,15 +3,16 @@ package com.dinhpx.test
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.dinhpx.test.adapter.ProgressTabAdapter
 import com.dinhpx.test.databinding.FragmentStoryBinding
-import com.dinhpx.test.model.Story
 import com.dinhpx.test.utils.ResumeTimer
 
 @SuppressLint("ClickableViewAccessibility")
@@ -23,10 +24,11 @@ class StoryFragment(private val position: Int) : Fragment() {
 
     private lateinit var binding: FragmentStoryBinding
     private val viewModel by activityViewModels<MainViewModel>()
-    private var countDownTimer: ResumeTimer? = null
 
-    private lateinit var story: Story
+    private var countDownTimer: ResumeTimer? = null
     private lateinit var tabAdapter: ProgressTabAdapter
+
+    private val toast by lazy { Toast.makeText(requireContext(), "", Toast.LENGTH_SHORT) }
 
 
     override fun onCreateView(
@@ -42,43 +44,55 @@ class StoryFragment(private val position: Int) : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initView()
         initListener()
-        initObserve()
     }
 
 
     private fun initView() {
-        story = viewModel.stories[position]
-        tabAdapter = ProgressTabAdapter(story.images.size)
+        viewModel.currentStoryPosition = position
+        binding.tvPosition.text = "Story ${position + 1}"
+        tabAdapter = ProgressTabAdapter(viewModel.currentStory.images.size)
         binding.rvTab.adapter = tabAdapter
-        binding.tvPosition.text = story.name
-        viewModel.setImagePosition(0)
+
+        countDownTimer = ResumeTimer(TIME_TAB, 100L, object : ResumeTimer.OnCountDownListener {
+            override fun onTick(elapsed: Long) {
+                tabAdapter.setTabProgress(process = (elapsed.toFloat() / TIME_TAB * 100).toInt())
+            }
+
+            override fun onFinished() {
+                tabAdapter.selectTab()
+                nextImage()
+            }
+        })
+
+        updateImage(0)
     }
 
 
     private fun initListener() {
-        binding.vPrev.setOnTouchListener { v, event ->
-            action(event, isNext = false)
+        binding.vPrev.setOnTouchListener { _, event ->
+            handleAction(event) {
+                backImage()
+            }
         }
 
-        binding.vNext.setOnTouchListener { v, event ->
-            action(event, isNext = true)
+        binding.vNext.setOnTouchListener { _, event ->
+            handleAction(event) {
+                nextImage()
+            }
         }
     }
 
-
     private var timeHoldDown = 0L
-    private fun action(event: MotionEvent?, isNext: Boolean): Boolean {
+    private fun handleAction(event: MotionEvent?, action: () -> Unit): Boolean {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
                 countDownTimer?.stop()
                 timeHoldDown = SystemClock.elapsedRealtime()
             }
             MotionEvent.ACTION_UP -> {
-                if (SystemClock.elapsedRealtime() - timeHoldDown < 300) {
-                    if (isNext)
-                        viewModel.nextImage(tabAdapter.getCurrentTabPosition())
-                    else
-                        viewModel.backImage(tabAdapter.getCurrentTabPosition())
+                if (SystemClock.elapsedRealtime() - timeHoldDown < 500) {
+                    countDownTimer?.stop()
+                    action()
                 } else {
                     countDownTimer?.start()
                 }
@@ -87,43 +101,52 @@ class StoryFragment(private val position: Int) : Fragment() {
         return true
     }
 
-    private fun initObserve() {
-        viewModel.currentImagePositionLiveData.observe(viewLifecycleOwner) {
-            binding.imageView.setImageResource(story.images[it])
-            countDownTab(it)
+    private fun nextImage(position: Int = tabAdapter.getCurrentTabPosition()) {
+        if (viewModel.isLastImageOfLastStory(position)) {
+            toast.setText("This is last story")
+            toast.show()
+            tabAdapter.selectTab(position)
+        } else if (viewModel.isLastImageOfStory(position)) {
+            viewModel.nextStory()
+        } else {
+            updateImage(position + 1)
+        }
+    }
+
+    private fun backImage(position: Int = tabAdapter.getCurrentTabPosition()) {
+        if (viewModel.isFirstImageOfFirstStory(position)) {
+            updateImage(0)
+        } else if (viewModel.isFirstImageOfStory(position)) {
+            viewModel.backStory()
+        } else {
+            updateImage(position - 1)
         }
     }
 
 
-    private fun countDownTab(position: Int) {
-        tabAdapter.setTabInProgress(position)
-        countDownTimer?.stop()
-        countDownTimer = ResumeTimer(TIME_TAB, 50L, object : ResumeTimer.OnCountDownListener {
-            override fun onTick(elapsed: Long) {
-                tabAdapter.setTabProgress(position, (elapsed.toFloat() / TIME_TAB * 100).toInt())
-            }
-
-            override fun onFinished() {
-                tabAdapter.selectTab(position)
-                viewModel.nextImage(position)
-            }
-        }).start()
+    private fun updateImage(position: Int) {
+        toast.cancel()
+        binding.imageView.setImageResource(viewModel.currentStory.images[position])
+        tabAdapter.setCurrentTab(position)
+        countDownTimer?.start(restart = true)
     }
+
 
     override fun onResume() {
         super.onResume()
+        viewModel.currentStoryPosition = position
         if (viewModel.isStopFragment) {
-            countDownTimer?.start()
             viewModel.isStopFragment = false
-        } else {
-            countDownTab(tabAdapter.getCurrentTabPosition())
+            countDownTimer?.start()
+        } else if (!countDownTimer!!.isRunning()) {
+            updateImage(tabAdapter.getCurrentTabPosition())
         }
-
     }
 
     override fun onPause() {
         super.onPause()
         countDownTimer?.stop()
+        toast.cancel()
     }
 
     override fun onStop() {

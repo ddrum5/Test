@@ -33,10 +33,10 @@ class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter
             ItemTabBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
     }
+
     override fun onBindViewHolder(holder: TabViewHolder, position: Int) {}
-    override fun getItemCount(): Int {
-        return mTabList.size
-    }
+    override fun getItemCount(): Int { return mTabList.size }
+
     override fun onBindViewHolder(
         holder: TabViewHolder,
         position: Int,
@@ -47,20 +47,12 @@ class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter
     }
 
 
-    fun getCurrentTabPosition() : Int {
+    fun getCurrentTabPosition(): Int {
         return mCurrentTabPosition
     }
 
-
-    fun setTabProgress(position: Int, process: Int, isSmooth: Boolean = true) {
+    fun setCurrentTab(position: Int) {
         mCurrentTabPosition = position
-        if (position in mTabList.indices) {
-            mTabList[position].progress = process
-            notifyItemChanged(position, if (isSmooth) SMOOTH_PROGRESS_PAYLOAD else PROGRESS_PAYLOAD)
-        }
-    }
-
-    fun setTabInProgress(position: Int) {
         unselectTab(position)
         if (position < mTabList.lastIndex) {
             unselectTab(position + 1)
@@ -70,13 +62,20 @@ class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter
         }
     }
 
-    fun unselectTab(position: Int) {
-        notifyItemChanged(position, HIDE_PAYLOAD)
+
+    fun setTabProgress(position: Int = mCurrentTabPosition, process: Int, isSmooth: Boolean = true) {
+        if (position in mTabList.indices) {
+            mTabList[position].progress = process
+            notifyItemChanged(position, if (isSmooth) SMOOTH_PROGRESS_PAYLOAD else PROGRESS_PAYLOAD)
+        }
     }
 
-    fun selectTab(position: Int) {
-        mTabList[position].progress = 100
-        notifyItemChanged(position, PROGRESS_PAYLOAD)
+    fun selectTab(position: Int = mCurrentTabPosition) {
+        setTabProgress(position, 100, false)
+    }
+
+    fun unselectTab(position: Int) {
+        notifyItemChanged(position, HIDE_PAYLOAD)
     }
 
 
