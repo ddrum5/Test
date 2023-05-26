@@ -1,3 +1,4 @@
+/*
 package com.dinhpx.test
 
 import android.annotation.SuppressLint
@@ -5,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -14,12 +14,9 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.dinhpx.test.adapter.ProgressTabAdapter
 import com.dinhpx.test.databinding.FragmentStoryBinding
 import com.dinhpx.test.utils.ResumeTimer
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @SuppressLint("ClickableViewAccessibility")
 class StoryFragment(private val position: Int) : Fragment() {
@@ -57,7 +54,7 @@ class StoryFragment(private val position: Int) : Fragment() {
     private fun initView() {
         viewModel.currentStoryPosition = position
         binding.tvPosition.text = "Story ${position + 1}"
-        tabAdapter = ProgressTabAdapter(viewModel.currentStory.images.size)
+        tabAdapter = ProgressTabAdapter(viewModel.currentStory.medias.size)
         binding.rvTab.adapter = tabAdapter
 
         countDownTimer = ResumeTimer(TIME_TAB, 100L, object : ResumeTimer.OnCountDownListener {
@@ -70,8 +67,9 @@ class StoryFragment(private val position: Int) : Fragment() {
                 nextImage()
             }
         })
-
         updateImage(0)
+
+        binding.videoView.start()
     }
 
 
@@ -139,7 +137,7 @@ class StoryFragment(private val position: Int) : Fragment() {
 
     private fun updateImage(position: Int) {
         toast.cancel()
-        binding.imageView.setImageResource(viewModel.currentStory.images[position])
+        binding.imageView.setImageResource(viewModel.currentStory.medias[position])
         tabAdapter.setCurrentTab(position)
         countDownTimer?.start(restart = true)
     }
@@ -173,3 +171,4 @@ class StoryFragment(private val position: Int) : Fragment() {
     }
 
 }
+*/

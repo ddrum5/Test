@@ -6,8 +6,22 @@
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+
+
 
 
 </LinearLayout>

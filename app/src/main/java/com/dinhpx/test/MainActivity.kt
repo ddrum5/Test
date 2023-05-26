@@ -1,17 +1,12 @@
 package com.dinhpx.test
 
+import android.media.MediaPlayer.OnPreparedListener
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
-import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.dinhpx.test.databinding.ActivityMainBinding
-import com.dinhpx.test.utils.toPx
-import kotlin.math.abs
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,11 +26,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        initView()
-        initObserve()
+        /*initView()
+        initObserve()*/
+        val path = "android.resource://" + packageName + "/" + R.raw.story1
+        binding.videoView.setVideoPath(path)
+        binding.videoView.start()
+
+        binding.button.setOnClickListener {
+            if (binding.videoView.isPlaying) {
+                binding.videoView.pause()
+            } else {
+                binding.videoView.start()
+            }
+        }
+        binding.videoView.setOnPreparedListener(OnPreparedListener {
+            val duration = binding.videoView.getDuration().toLong()
+            Log.d("DINHPXTEST",TimeUnit.MILLISECONDS.toSeconds(duration).toString())
+
+        })
+
+
     }
 
-    private fun initView() {
+    /*private fun initView() {
 
         val viewPagerAdapter = object : FragmentStateAdapter(this) {
             override fun getItemCount() = viewModel.stories.size
@@ -74,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.currentStoryPositionLiveData.observe(this) {
             binding.viewPager.currentItem = it
         }
-    }
+    }*/
 
 
 }

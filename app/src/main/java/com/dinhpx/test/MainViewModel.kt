@@ -2,16 +2,16 @@ package com.dinhpx.test
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.dinhpx.test.model.Story
+import com.dinhpx.test.model.StoryModel
 
 class MainViewModel : ViewModel() {
-    var isStopFragment: Boolean = false
+    /*var isStopFragment: Boolean = false
 
 
     var currentStoryPosition = 0
     var currentStoryPositionLiveData = MutableLiveData<Int>()
-    val stories = mutableListOf<Story>()
-    val currentStory: Story
+    val stories = mutableListOf<StoryModel>()
+    val currentStory: StoryModel
         get() = stories[currentStoryPosition]
 
 
@@ -22,9 +22,9 @@ class MainViewModel : ViewModel() {
             R.color.purple_500,
             R.color.teal_200,
         )
-        stories.add(Story(images = colors.shuffled()))
-        stories.add(Story(images = colors.shuffled().takeLast(2)))
-        stories.add(Story(images = colors.shuffled().takeLast(3)))
+        stories.add(StoryModel(medias = colors.shuffled()))
+        stories.add(StoryModel(medias = colors.shuffled().takeLast(2)))
+        stories.add(StoryModel(medias = colors.shuffled().takeLast(3)))
     }
 
 
@@ -45,12 +45,12 @@ class MainViewModel : ViewModel() {
     }
 
     fun isLastImageOfStory(position: Int): Boolean {
-        return position == currentStory.images.lastIndex
+        return position == currentStory.medias.lastIndex
     }
 
     fun isLastImageOfLastStory(position: Int): Boolean {
-        return position == currentStory.images.lastIndex && currentStoryPosition == stories.lastIndex
-    }
+        return position == currentStory.medias.lastIndex && currentStoryPosition == stories.lastIndex
+    }*/
 
 
 }

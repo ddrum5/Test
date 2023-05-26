@@ -34,8 +34,13 @@ class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter
         )
     }
 
-    override fun onBindViewHolder(holder: TabViewHolder, position: Int) {}
-    override fun getItemCount(): Int { return mTabList.size }
+    override fun onBindViewHolder(holder: TabViewHolder, position: Int) {
+        holder.onBind(mTabList[position])
+    }
+
+    override fun getItemCount(): Int {
+        return mTabList.size
+    }
 
     override fun onBindViewHolder(
         holder: TabViewHolder,
@@ -63,7 +68,11 @@ class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter
     }
 
 
-    fun setTabProgress(position: Int = mCurrentTabPosition, process: Int, isSmooth: Boolean = true) {
+    fun setTabProgress(
+        position: Int = mCurrentTabPosition,
+        process: Int,
+        isSmooth: Boolean = true
+    ) {
         if (position in mTabList.indices) {
             mTabList[position].progress = process
             notifyItemChanged(position, if (isSmooth) SMOOTH_PROGRESS_PAYLOAD else PROGRESS_PAYLOAD)
@@ -86,6 +95,10 @@ class ProgressTabAdapter(tabSize: Int) : RecyclerView.Adapter<ProgressTabAdapter
             binding.root.layoutParams.apply {
                 width = screenWidth / mTabList.size
             }
+        }
+
+        fun onBind(tabEntity: TabEntity) {
+            binding.progressBar.progress = tabEntity.progress
         }
 
         fun onBind(tabEntity: TabEntity, payloads: MutableList<Any>) {

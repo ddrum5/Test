@@ -30,12 +30,17 @@
             android:background="@color/purple_200"
             android:textSize="50sp" />
 
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvPosition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="1"
+            tools:text="1"
             android:textColor="@color/white"
             android:textSize="50sp" />
 
