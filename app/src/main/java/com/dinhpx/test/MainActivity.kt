@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
                 val scale = MAX_SCALE - (MAX_SCALE - MIN_SCALE) * absPosition
                 view.scaleY = scale
                 view.scaleX = scale
-                Log.d("DINHPXTEST", position.toString())
             }
         }
 

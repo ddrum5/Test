@@ -2,6 +2,8 @@ package com.dinhpx.test
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,11 +11,15 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.dinhpx.test.adapter.ProgressTabAdapter
 import com.dinhpx.test.databinding.FragmentStoryBinding
 import com.dinhpx.test.utils.ResumeTimer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @SuppressLint("ClickableViewAccessibility")
 class StoryFragment(private val position: Int) : Fragment() {
@@ -29,6 +35,7 @@ class StoryFragment(private val position: Int) : Fragment() {
     private lateinit var tabAdapter: ProgressTabAdapter
 
     private val toast by lazy { Toast.makeText(requireContext(), "", Toast.LENGTH_SHORT) }
+    private val handler by lazy { Handler(Looper.getMainLooper()) }
 
 
     override fun onCreateView(
@@ -88,9 +95,14 @@ class StoryFragment(private val position: Int) : Fragment() {
             MotionEvent.ACTION_DOWN -> {
                 countDownTimer?.stop()
                 timeHoldDown = SystemClock.elapsedRealtime()
+                handler.postDelayed({
+                    binding.rvTab.isVisible = false
+                }, 300)
             }
             MotionEvent.ACTION_UP -> {
-                if (SystemClock.elapsedRealtime() - timeHoldDown < 500) {
+                handler.removeCallbacksAndMessages(null)
+                binding.rvTab.isVisible = true
+                if (SystemClock.elapsedRealtime() - timeHoldDown < 300) {
                     countDownTimer?.stop()
                     action()
                 } else {
@@ -99,6 +111,7 @@ class StoryFragment(private val position: Int) : Fragment() {
             }
         }
         return true
+
     }
 
     private fun nextImage(position: Int = tabAdapter.getCurrentTabPosition()) {
@@ -152,6 +165,11 @@ class StoryFragment(private val position: Int) : Fragment() {
     override fun onStop() {
         super.onStop()
         viewModel.isStopFragment = true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
     }
 
 }
