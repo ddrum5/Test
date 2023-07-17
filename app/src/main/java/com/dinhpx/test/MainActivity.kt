@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.dinhpx.test.databinding.ActivityMainBinding
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 
@@ -22,14 +21,7 @@ class MainActivity : AppCompatActivity() {
     private val dialog by lazy { LoadingDialog(this) }
 
     private val adapter = TextAdapter()
-    private val listData = mutableListOf(
-        "1",
-        "1",
-        "1",
-        "1",
-        "1",
-        "1",
-    )
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,14 +29,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.list.adapter = adapter
-        adapter.setData(listData)
+        adapter.setData(viewModel.listData)
 
-
-        binding.button.setOnClickListener {
-
+        viewModel.countLiveData.observe(this) {
+            adapter.updateData(it.first, it.second)
         }
-
-
+        binding.button.setOnClickListener {
+            viewModel.getCount()
+        }
 
 
     }
