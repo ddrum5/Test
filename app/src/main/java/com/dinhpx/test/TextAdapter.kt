@@ -7,7 +7,7 @@ import com.dinhpx.test.databinding.ItemSimpleBinding
 
 class TextAdapter() : RecyclerView.Adapter<ViewHolder>() {
 
-    private val listData = mutableListOf<String>()
+    private val listData = mutableListOf<MainViewModel.CouData>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -23,23 +23,27 @@ class TextAdapter() : RecyclerView.Adapter<ViewHolder>() {
         return listData.size
     }
 
-    fun setData(list: List<String>) {
-        listData.clear()
-        listData.addAll(list)
-        notifyDataSetChanged()
-    }
 
-    fun updateData(position: Int, text: String) {
-        listData[position] = text
-        notifyItemChanged(position)
+
+    fun updateData(data: MainViewModel.CouData) {
+        if (listData.any { it.position == data.position }) {
+            listData[data.position] = data
+            notifyItemChanged(data.position)
+        } else {
+            listData.add(data)
+            notifyItemInserted(data.position)
+        }
+
     }
 
 
 }
 
 class ViewHolder(private val binding: ItemSimpleBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(data: String) {
-        binding.textView.text = data
+    fun bind(data: MainViewModel.CouData) {
+        adapterPosition
+        binding.textView.text = "${data.position} --- ${data.time}"
+        binding.textView2.text = data.threadName
     }
 }
 

@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.dinhpx.test.databinding.ActivityMainBinding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
 
 
@@ -23,19 +25,19 @@ class MainActivity : AppCompatActivity() {
     private val adapter = TextAdapter()
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
         binding.list.adapter = adapter
-        adapter.setData(viewModel.listData)
 
-        viewModel.countLiveData.observe(this) {
-            adapter.updateData(it.first, it.second)
-        }
+
         binding.button.setOnClickListener {
-            viewModel.getCount()
+            lifecycleScope.launch {
+                viewModel.getCount().collect {
+                    adapter.updateData(it)
+                }
+            }
         }
 
 
