@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.dinhpx.test.databinding.ActivityMainBinding
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,16 +31,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.rvList.adapter = adapter
-        ( binding.rvList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+        (binding.rvList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
 
 
         binding.button.setOnClickListener {
-            lifecycleScope.launch {
-                viewModel.getCount().collect {
-                    adapter.updateData(it)
+            repeat(50) {
+                lifecycleScope.launch {
+                    viewModel.getCount().collect {
+                        adapter.updateData(it)
+                    }
                 }
             }
+
         }
 
 

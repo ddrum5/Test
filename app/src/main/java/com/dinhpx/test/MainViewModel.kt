@@ -9,18 +9,19 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.system.measureTimeMillis
 
 class MainViewModel : ViewModel() {
 
     companion object {
         const val TAG = "DINHPXTEST"
-        const val MAX_SIZE = 10
+        const val MAX_SIZE = 10000
     }
 
     val listData = mutableListOf<CouData>()
 
     var currentPosition = 0
-    val timeDelay = 10L
+    val timeDelay = 1L
 
     fun getCount() = flow {
         if (currentPosition > listData.lastIndex) currentPosition = 0
@@ -32,22 +33,32 @@ class MainViewModel : ViewModel() {
         }
 
         var isRun = true
-        var count = 0.0
+        val timeStart = System.currentTimeMillis()
         viewModelScope.launch(Dispatchers.IO) {
-            getOne()
-            isRun = false
+            val a = measureTimeMillis {
+                getOne()
+                isRun = false
+            }
+
+            Log.d(TAG, "getCount: a = $a")
+
         }
         while (isRun) {
-            count += timeDelay.toFloat()
-            val stringCount =  (count / 1000).toString()
-            emit(CouData(index, String.format("%.1f", stringCount), Thread.currentThread().name))
+            val time = System.currentTimeMillis() - timeStart
+            emit(
+                CouData(
+                    index,
+                    String.format("%.2f", (time / 1000F)),
+                    Thread.currentThread().name
+                )
+            )
         }
 
     }.onEach { delay(timeDelay) }
 
 
     suspend fun getOne(): Int {
-        delay((4L..10).random() * 1000)
+        delay((10L..20).random() * 1000)
         return 5
     }
 

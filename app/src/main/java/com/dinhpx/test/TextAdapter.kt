@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.dinhpx.test.databinding.ItemSimpleBinding
 
-class TextAdapter() : RecyclerView.Adapter<ViewHolder>() {
+class TextAdapter : RecyclerView.Adapter<ViewHolder>() {
 
     private val listData = mutableListOf<MainViewModel.CouData>()
 
@@ -23,8 +23,6 @@ class TextAdapter() : RecyclerView.Adapter<ViewHolder>() {
         return listData.size
     }
 
-
-
     fun updateData(data: MainViewModel.CouData) {
         if (listData.any { it.position == data.position }) {
             listData[data.position] = data
@@ -36,14 +34,13 @@ class TextAdapter() : RecyclerView.Adapter<ViewHolder>() {
 
     }
 
-
 }
 
 class ViewHolder(private val binding: ItemSimpleBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(data: MainViewModel.CouData) {
-        adapterPosition
-        binding.textView.text = "${data.position} --- ${data.time}"
-        binding.textView2.text = data.threadName
+        binding.textView.text = data.time
+//        binding.textView.text = "${data.position} - ${data.time} - ${data.threadName}"
+
     }
 }
 
