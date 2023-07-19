@@ -1,5 +1,6 @@
 package com.dinhpx.test
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -13,18 +14,19 @@ class MainViewModel : ViewModel() {
 
     companion object {
         const val TAG = "DINHPXTEST"
-        const val MAX_SIZE = 15
+        const val MAX_SIZE = 10
     }
 
     val listData = mutableListOf<CouData>()
 
     var currentPosition = 0
-    val timeDelay = 200L
+    val timeDelay = 10L
 
-    fun getCount() = flow<CouData> {
+    fun getCount() = flow {
         if (currentPosition > listData.lastIndex) currentPosition = 0
         val index = currentPosition
         currentPosition++
+
         if (listData.size < MAX_SIZE) {
             listData.add(CouData(position = currentPosition))
         }
@@ -37,14 +39,15 @@ class MainViewModel : ViewModel() {
         }
         while (isRun) {
             count += timeDelay.toFloat()
-            emit(CouData(index, (count / 1000).toString(), Thread.currentThread().name))
+            val stringCount =  (count / 1000).toString()
+            emit(CouData(index, String.format("%.1f", stringCount), Thread.currentThread().name))
         }
 
     }.onEach { delay(timeDelay) }
 
 
     suspend fun getOne(): Int {
-        delay(4000)
+        delay((4L..10).random() * 1000)
         return 5
     }
 

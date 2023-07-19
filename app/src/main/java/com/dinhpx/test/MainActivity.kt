@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.dinhpx.test.databinding.ActivityMainBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
@@ -29,7 +30,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.list.adapter = adapter
+        binding.rvList.adapter = adapter
+        ( binding.rvList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+
 
 
         binding.button.setOnClickListener {
