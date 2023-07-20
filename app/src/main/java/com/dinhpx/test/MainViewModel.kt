@@ -1,15 +1,12 @@
 package com.dinhpx.test
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlin.system.measureTimeMillis
 
 class MainViewModel : ViewModel() {
 
@@ -21,7 +18,7 @@ class MainViewModel : ViewModel() {
     val listData = mutableListOf<CouData>()
 
     var currentPosition = 0
-    val timeDelay = 1L
+    val timeDelay = 50L
 
     fun getCount() = flow {
         if (currentPosition > listData.lastIndex) currentPosition = 0
@@ -31,17 +28,11 @@ class MainViewModel : ViewModel() {
         if (listData.size < MAX_SIZE) {
             listData.add(CouData(position = currentPosition))
         }
-
         var isRun = true
         val timeStart = System.currentTimeMillis()
         viewModelScope.launch(Dispatchers.IO) {
-            val a = measureTimeMillis {
-                getOne()
-                isRun = false
-            }
-
-            Log.d(TAG, "getCount: a = $a")
-
+            getOne()
+            isRun = false
         }
         while (isRun) {
             val time = System.currentTimeMillis() - timeStart

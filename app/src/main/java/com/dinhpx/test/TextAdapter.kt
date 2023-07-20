@@ -7,7 +7,7 @@ import com.dinhpx.test.databinding.ItemSimpleBinding
 
 class TextAdapter : RecyclerView.Adapter<ViewHolder>() {
 
-    private val listData = mutableListOf<MainViewModel.CouData>()
+    private val mapData = HashMap<Int, MainViewModel.CouData>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -16,19 +16,20 @@ class TextAdapter : RecyclerView.Adapter<ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(listData[position])
+        holder.bind(mapData[position])
     }
 
     override fun getItemCount(): Int {
-        return listData.size
+        return mapData.size
     }
 
-    fun updateData(data: MainViewModel.CouData) {
-        if (listData.any { it.position == data.position }) {
-            listData[data.position] = data
+    fun updateData(data :MainViewModel.CouData) {
+
+        if (mapData.contains(data.position)) {
+            mapData[data.position] = data
             notifyItemChanged(data.position)
         } else {
-            listData.add(data)
+            mapData[data.position] = data
             notifyItemInserted(data.position)
         }
 
@@ -37,10 +38,8 @@ class TextAdapter : RecyclerView.Adapter<ViewHolder>() {
 }
 
 class ViewHolder(private val binding: ItemSimpleBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(data: MainViewModel.CouData) {
-        binding.textView.text = data.time
-//        binding.textView.text = "${data.position} - ${data.time} - ${data.threadName}"
-
+    fun bind(data: MainViewModel.CouData?) {
+        binding.textView.text = data?.time
     }
 }
 
